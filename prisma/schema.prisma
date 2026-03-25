@@ -7,11 +7,10 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// ─── Enums ────────────────────────────────────────────────────────────────────
-
 enum Role {
   STUDENT
   ADMIN
+  LECTURER
 }
 
 enum ClubStatus {
@@ -65,42 +64,37 @@ enum ContactPreference {
   CHAT
 }
 
-// ─── User ─────────────────────────────────────────────────────────────────────
-
 model User {
-  id          Int      @id @default(autoincrement())
+  id          Int       @id @default(autoincrement())
   fullName    String
-  email       String   @unique
-  studentId   String   @unique
+  email       String    @unique
+  studentId   String    @unique
   password    String
   faculty     String
   degree      String
   intakeYear  Int
-  role        Role     @default(STUDENT)
+  role        Role      @default(STUDENT)
   photoUrl    String?
   phone       String?
   dateOfBirth DateTime?
   gender      String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 
-  // Relations
-  semesters        Semester[]
-  sportAchievements SportAchievement[]
-  studentClubs     StudentClub[]
-  materials        StudyMaterial[]
-  bookmarks        Bookmark[]
-  clubApplications ClubApplication[]
-  mentorProfile    MentorProfile?
+  semesters           Semester[]
+  sportAchievements   SportAchievement[]
+  studentClubs        StudentClub[]
+  materials           StudyMaterial[]
+  bookmarks           Bookmark[]
+  clubApplications    ClubApplication[]
+  mentorProfile       MentorProfile?
   sessionApplications SessionApplication[]
-  sessionFeedbacks SessionFeedback[]
-  notifications    Notification[]
-  sentMessages     Message[]         @relation("SentMessages")
-  receivedMessages Message[]         @relation("ReceivedMessages")
-  fileAssets       FileAsset[]
+  sessionFeedbacks    SessionFeedback[]
+  notifications       Notification[]
+  sentMessages        Message[]            @relation("SentMessages")
+  receivedMessages    Message[]            @relation("ReceivedMessages")
+  fileAssets          FileAsset[]
 }
-
-// ─── Academic ─────────────────────────────────────────────────────────────────
 
 model Semester {
   id           Int      @id @default(autoincrement())
@@ -129,8 +123,6 @@ model SubjectResult {
   semester Semester @relation(fields: [semesterId], references: [id], onDelete: Cascade)
 }
 
-// ─── Sports ───────────────────────────────────────────────────────────────────
-
 model SportAchievement {
   id              Int             @id @default(autoincrement())
   sportName       String
@@ -145,8 +137,6 @@ model SportAchievement {
   user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
   fileAsset FileAsset?
 }
-
-// ─── Clubs ────────────────────────────────────────────────────────────────────
 
 model Club {
   id           Int          @id @default(autoincrement())
@@ -167,13 +157,13 @@ model Club {
 }
 
 model StudentClub {
-  id                 Int      @id @default(autoincrement())
-  userId             Int
-  clubId             Int
-  role               String   @default("Member")
-  joinedDate         DateTime @default(now())
-  participationPoints Int     @default(0)
-  isActive           Boolean  @default(true)
+  id                  Int      @id @default(autoincrement())
+  userId              Int
+  clubId              Int
+  role                String   @default("Member")
+  joinedDate          DateTime @default(now())
+  participationPoints Int      @default(0)
+  isActive            Boolean  @default(true)
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
   club Club @relation(fields: [clubId], references: [id], onDelete: Cascade)
@@ -197,8 +187,8 @@ model ClubApplication {
   createdAt       DateTime          @default(now())
   updatedAt       DateTime          @updatedAt
 
-  user     User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
-  club     Club                  @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  user     User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  club     Club                 @relation(fields: [clubId], references: [id], onDelete: Cascade)
   feedback ApplicationFeedback?
 }
 
@@ -211,18 +201,16 @@ model ApplicationFeedback {
   application ClubApplication @relation(fields: [applicationId], references: [id], onDelete: Cascade)
 }
 
-// ─── Study Materials ──────────────────────────────────────────────────────────
-
 model StudyMaterial {
-  id          Int          @id @default(autoincrement())
-  title       String
-  courseCode  String
-  type        MaterialType
-  description String?      @db.Text
-  userId      Int
-  isSummarized Boolean     @default(false)
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
+  id           Int          @id @default(autoincrement())
+  title        String
+  courseCode   String
+  type         MaterialType
+  description  String?      @db.Text
+  userId       Int
+  isSummarized Boolean      @default(false)
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
 
   user               User                @relation(fields: [userId], references: [id], onDelete: Cascade)
   fileAsset          FileAsset?
@@ -231,14 +219,14 @@ model StudyMaterial {
 }
 
 model MaterialSummary {
-  id           Int      @id @default(autoincrement())
-  materialId   Int      @unique
-  quickSummary String   @db.Text
-  detailedNotes String? @db.Text
-  keyTerms     String?  @db.Text
-  qaContent    String?  @db.Text
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id            Int      @id @default(autoincrement())
+  materialId    Int      @unique
+  quickSummary  String   @db.Text
+  detailedNotes String?  @db.Text
+  keyTerms      String?  @db.Text
+  qaContent     String?  @db.Text
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
   material StudyMaterial @relation(fields: [materialId], references: [id], onDelete: Cascade)
 }
@@ -268,8 +256,6 @@ model Bookmark {
   @@unique([userId, resourceId])
 }
 
-// ─── Support / Mentors ────────────────────────────────────────────────────────
-
 model MentorProfile {
   id                Int               @id @default(autoincrement())
   userId            Int               @unique
@@ -289,17 +275,17 @@ model MentorProfile {
 }
 
 model SupportSession {
-  id           Int           @id @default(autoincrement())
-  mentorId     Int
-  subject      String
-  description  String?       @db.Text
-  date         DateTime
-  durationMins Int           @default(60)
+  id             Int           @id @default(autoincrement())
+  mentorId       Int
+  subject        String
+  description    String?       @db.Text
+  date           DateTime
+  durationMins   Int           @default(60)
   locationOrLink String?
-  capacity     Int           @default(10)
-  status       SessionStatus @default(UPCOMING)
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
+  capacity       Int           @default(10)
+  status         SessionStatus @default(UPCOMING)
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
 
   mentor       MentorProfile        @relation(fields: [mentorId], references: [id], onDelete: Cascade)
   applications SessionApplication[]
@@ -334,8 +320,6 @@ model SessionFeedback {
   @@unique([sessionId, userId])
 }
 
-// ─── Notifications & Chat ─────────────────────────────────────────────────────
-
 model Notification {
   id        Int      @id @default(autoincrement())
   userId    Int
@@ -359,18 +343,16 @@ model Message {
   receiver User @relation("ReceivedMessages", fields: [receiverId], references: [id], onDelete: Cascade)
 }
 
-// ─── File Assets ──────────────────────────────────────────────────────────────
-
 model FileAsset {
-  id                Int               @id @default(autoincrement())
-  fileName          String
-  fileSize          Int
-  fileUrl           String
-  fileType          String
-  userId            Int
-  materialId        Int?              @unique
-  achievementId     Int?              @unique
-  createdAt         DateTime          @default(now())
+  id            Int      @id @default(autoincrement())
+  fileName      String
+  fileSize      Int
+  fileUrl       String
+  fileType      String
+  userId        Int
+  materialId    Int?     @unique
+  achievementId Int?     @unique
+  createdAt     DateTime @default(now())
 
   user        User              @relation(fields: [userId], references: [id], onDelete: Cascade)
   material    StudyMaterial?    @relation(fields: [materialId], references: [id], onDelete: SetNull)

@@ -4,21 +4,20 @@ import { cookies } from "next/headers"
 const SESSION_COOKIE = "educore_session"
 const SECRET = process.env.SESSION_SECRET ?? "dev-secret-change-in-production"
 
-// ── Password hashing (SHA-256 — matches seed.ts) ─────────────────────────────
-// For production, replace with bcrypt or argon2.
+// ── Password hashing ──────────────────────────────────────────────────────────
 
 export function hashPassword(password: string): string {
   return createHash("sha256").update(password).digest("hex")
 }
 
 export function verifyPassword(plain: string, hashed: string): boolean {
-  const hash = Buffer.from(hashPassword(plain))
-  const stored = Buffer.from(hashed)
-  if (hash.length !== stored.length) return false
-  return timingSafeEqual(hash, stored)
+  const a = Buffer.from(hashPassword(plain))
+  const b = Buffer.from(hashed)
+  if (a.length !== b.length) return false
+  return timingSafeEqual(a, b)
 }
 
-// ── Session token (HMAC-signed) ───────────────────────────────────────────────
+// ── HMAC-signed session token ─────────────────────────────────────────────────
 
 function sign(payload: string): string {
   return createHmac("sha256", SECRET).update(payload).digest("hex")
@@ -26,8 +25,7 @@ function sign(payload: string): string {
 
 function createToken(userId: number, role: string): string {
   const payload = `${userId}:${role}`
-  const sig = sign(payload)
-  return Buffer.from(`${payload}.${sig}`).toString("base64url")
+  return Buffer.from(`${payload}.${sign(payload)}`).toString("base64url")
 }
 
 function parseToken(token: string): { userId: number; role: string } | null {
@@ -46,25 +44,18 @@ function parseToken(token: string): { userId: number; role: string } | null {
 
 // ── Cookie helpers ────────────────────────────────────────────────────────────
 
-export async function setSession(
-  userId: number,
-  role: string,
-  remember = false
-) {
+export async function setSession(userId: number, role: string, remember = false) {
   const store = await cookies()
   store.set(SESSION_COOKIE, createToken(userId, role), {
     httpOnly: true,
     sameSite: "lax",
     path: "/",
     secure: process.env.NODE_ENV === "production",
-    ...(remember ? { maxAge: 60 * 60 * 24 * 30 } : {}), // 30 days if remember me
+    ...(remember ? { maxAge: 60 * 60 * 24 * 30 } : {}),
   })
 }
 
-export async function getSession(): Promise<{
-  userId: number
-  role: string
-} | null> {
+export async function getSession(): Promise<{ userId: number; role: string } | null> {
   const store = await cookies()
   const token = store.get(SESSION_COOKIE)?.value
   if (!token) return null

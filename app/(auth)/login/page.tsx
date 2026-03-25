@@ -34,7 +34,8 @@ export default function LoginPage() {
         return
       }
 
-      router.push("/dashboard")
+      const dest = data.role === "ADMIN" ? "/admin" : data.role === "LECTURER" ? "/lecturer" : "/dashboard"
+      router.push(dest)
     } catch {
       setError("Something went wrong. Please try again.")
     } finally {
