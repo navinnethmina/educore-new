@@ -66,6 +66,7 @@ export default async function AdminPage() {
         <div className="bg-card border border-border rounded-xl p-5">
           <h2 className="font-semibold text-foreground mb-4">Quick Actions</h2>
           <div className="space-y-2">
+            <AdminAction href="/admin/users" label="Manage Users" />
             <AdminAction href="/admin/clubs" label="Manage Clubs" />
             <AdminAction href="/admin/club-applications" label="Review Applications" />
             <AdminAction href="/admin/mentors" label="Manage Mentors" />

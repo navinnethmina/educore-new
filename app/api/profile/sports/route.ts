@@ -21,7 +21,7 @@ export async function POST(request: NextRequest) {
   if (!session) return Response.json({ error: "Unauthorized" }, { status: 401 })
 
   const body = await request.json()
-  const { sportName, achievementType, position, date, points } = body
+  const { sportName, achievementType, position, date, points, certificateUrl, certificateFileName } = body
 
   if (!sportName || !achievementType || !date)
     return Response.json({ error: "Sport name, achievement type, and date are required." }, { status: 400 })
@@ -37,7 +37,19 @@ export async function POST(request: NextRequest) {
       position: position ? String(position).trim() : null,
       date: new Date(date),
       points: points ? Number(points) : 0,
+      ...(certificateUrl && {
+        fileAsset: {
+          create: {
+            userId: session.userId,
+            fileName: certificateFileName ?? "certificate",
+            fileSize: 0,
+            fileUrl: certificateUrl,
+            fileType: "image",
+          },
+        },
+      }),
     },
+    include: { fileAsset: true },
   })
 
   return Response.json(achievement, { status: 201 })
